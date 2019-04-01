@@ -1,6 +1,6 @@
 import Node from './node'
-const singlie = require('singlie') 
-const EventEmitter = require('wolfy87-eventemitter')
+import singlie from 'singlie'
+import EventEmitter from 'wolfy87-eventemitter'
 
 class LineTimer{
   constructor(){
@@ -22,10 +22,10 @@ class LineTimer{
         if(this.line.get(high).id < id) break
       }else if(middleId < id){
         ret = low = middle 
-        if (this.line.get(low).id > id) break
       }else {
         break
       }
+      
     }
     if(this.line.isEmpty()) return 0
     return this.line.get(ret).id - id > 0 ? ret : (ret + 1) 

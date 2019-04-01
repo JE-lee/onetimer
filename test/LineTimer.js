@@ -1,43 +1,37 @@
 import LineTimer from '../src/LineTimer'
+import _ from 'lodash'
 
 const assert = require('assert')
 let list = []
 const generateFn = word => () => list.push(word)
-
+const test = (done, deltaList) => {
+  let line = new LineTimer()
+  list = []
+  deltaList.forEach(delta => {
+    line.push(delta, generateFn(delta))
+  })
+  line.on('done', () => {
+    let expected = deltaList.sort((a, b) => a - b).join(',')
+    // eslint-disable-next-line no-console
+    console.log('expected', expected)
+    assert.equal(list.join(','), expected, '不相等')
+    done()
+  })
+}
 describe('line', function(){
   this.timeout(0)
   it('#test1', (done) => {
-    // Whether it works
-    let line = new LineTimer()
-    list = []
-    line.push(0, generateFn(0)) 
-    line.push(1, generateFn(1))
-    line.push(2, generateFn(2)) 
-    line.push(3, generateFn(3))
-    line.push(4, generateFn(4))
-    line.push(5, generateFn(5))
-    line.push(6, generateFn(6))
-    line.push(7, generateFn(7))
-    line.on('done', () => {
-      assert.equal(list.sort((a, b) => a - b).join(''), '01234567', '不相等')
-      done()
-    })
+    let list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    test(done,list)
   })
   it('#test2', (done) => {
     // Whether it works
-    let line = new LineTimer()
-    list = []
-    line.push(7, generateFn(7))
-    line.push(6, generateFn(6))
-    line.push(5, generateFn(5))
-    line.push(4, generateFn(4))
-    line.push(3, generateFn(3))
-    line.push(2, generateFn(2))
-    line.push(1, generateFn(1))
-    line.push(0, generateFn(0))
-    line.on('done', () => {
-      assert.equal(list.sort((a,b) => a - b ).join(''), '01234567', '不相等')
-      done()
-    })
+    let list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].reverse().map((delta, i) => delta + i * 10)
+    test(done, list)
+  })
+  it('#test3', (done) => {
+    // Whether it works
+    let list = Array(10).fill(1).map(() => _.random(500))
+    test(done, list)
   })
 })
