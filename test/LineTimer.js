@@ -1,4 +1,4 @@
-import LineTimer from '../src/LineTimer'
+import LineTimer from '../dist/LineTimer'
 import _ from 'lodash'
 
 const assert = require('assert')
@@ -14,7 +14,7 @@ const test = (done, deltaList) => {
     let expected = deltaList.sort((a, b) => a - b).join(',')
     // eslint-disable-next-line no-console
     console.log('expected', expected)
-    assert.equal(list.join(','), expected, '不相等')
+    assert.equal(list.join(','), expected, 'not equal')
     done()
   })
 }
@@ -34,4 +34,5 @@ describe('line', function(){
     let list = Array(10).fill(1).map(() => _.random(500))
     test(done, list)
   })
+
 })

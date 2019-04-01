@@ -1,10 +1,12 @@
 import Node from './node'
-import singlie from 'singlie'
+//const singlie = require('singlie')
+//const EventEmitter = require('wolfy87-eventemitter')
+import { Linear } from 'singlie'
 import EventEmitter from 'wolfy87-eventemitter'
 
 class LineTimer{
   constructor(){
-    this.line = new singlie.Linear()
+    this.line = new Linear()
     this.onlyTimer = null
   }
   InWhichIndex(node){
@@ -25,7 +27,7 @@ class LineTimer{
       }else {
         break
       }
-      
+
     }
     if(this.line.isEmpty()) return 0
     return this.line.get(ret).id - id > 0 ? ret : (ret + 1) 
