@@ -1,6 +1,6 @@
 import Node from './node'
-const singlie = require('singlie') 
-const EventEmitter = require('wolfy87-eventemitter')
+import singlie from 'singlie'
+import EventEmitter from 'wolfy87-eventemitter'
 
 class LineTimer{
   constructor(){
