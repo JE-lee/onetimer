@@ -1,1 +1,0 @@
-// trnasform setTimeout width OneTimer
