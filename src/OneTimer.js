@@ -1,12 +1,13 @@
-import Node from './node'
-//const singlie = require('singlie')
-//const EventEmitter = require('wolfy87-eventemitter')
-import { Linear } from 'singlie'
-import EventEmitter from 'wolfy87-eventemitter'
+const Node = require('./node')
+const singlie = require('singlie')
+const EventEmitter = require('wolfy87-eventemitter')
+//import Node from './node'
+//import { Linear } from 'singlie'
+//import EventEmitter from 'wolfy87-eventemitter'
 
 class OneTimer{
   constructor(){
-    this.line = new Linear()
+    this.line = new singlie.Linear()
     this.onlyTimer = null
   }
   InWhichIndex(node){
@@ -69,10 +70,11 @@ class OneTimer{
       // start again
       this.startTimer(delta)
     }, delay)
+    this.emitEvent('timeout', [delay])
   }
 }
 
 // inherit EventEmitter
 Object.assign(OneTimer.prototype, EventEmitter.prototype)
 
-export default OneTimer
+module.exports =  OneTimer

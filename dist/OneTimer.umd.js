@@ -4,7 +4,7 @@
   (global = global || self, global.OneTimer = factory());
 }(this, function () { 'use strict';
 
-  class Node {
+  var node = class {
     constructor(id){
       this.id = id || Date.now();
       this.callbacks = []; 
@@ -16,7 +16,7 @@
         this.callbacks.forEach(callback => callback());
       }
     }
-  }
+  };
 
   class List {
     constructor() {
@@ -27,7 +27,7 @@
 
   var list = List;
 
-  class Node$1 {
+  class Node {
     constructor(options = {}) {
       this._value = options.value;
       this._next = null;
@@ -50,7 +50,7 @@
     }
   }
 
-  var node = Node$1;
+  var node$1 = Node;
 
   class Circular extends list {
     get _last() {
@@ -87,20 +87,20 @@
 
     _addHead(value) {
       const {_head} = this;
-      const node$1 = new node({value});
-      this._head = node$1;
-      this._head.next = this.length === 0 ? node$1 : _head;
+      const node = new node$1({value});
+      this._head = node;
+      this._head.next = this.length === 0 ? node : _head;
       this._length++;
       this._last.next = this._head;
       return this;
     }
 
     _addNode(value, index = this.length) {
-      const node$1 = new node({value});
+      const node = new node$1({value});
       const prev = this._getNode(index - 1);
-      node$1.next = prev.next;
+      node.next = prev.next;
       this._length++;
-      prev.next = node$1;
+      prev.next = node;
       return this;
     }
 
@@ -285,17 +285,17 @@
 
     _addHead(value) {
       const {_head} = this;
-      this._head = new node({value});
+      this._head = new node$1({value});
       this._head.next = _head;
       this._length++;
       return this;
     }
 
     _addNode(value, index = this.length) {
-      const node$1 = new node({value});
+      const node = new node$1({value});
       const prev = this._getNode(index - 1);
-      node$1.next = prev.next;
-      prev.next = node$1;
+      node.next = prev.next;
+      prev.next = node;
       this._length++;
       return this;
     }
@@ -441,8 +441,7 @@
 
   var linear = Linear;
 
-  var singlie = Object.assign({}, {Circular: circular}, {Linear: linear}, {Node: node});
-  var singlie_1 = singlie.Linear;
+  var singlie = Object.assign({}, {Circular: circular}, {Linear: linear}, {Node: node$1});
 
   var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -926,9 +925,13 @@
   }(typeof window !== 'undefined' ? window : commonjsGlobal || {}));
   });
 
+  //import Node from './node'
+  //import { Linear } from 'singlie'
+  //import EventEmitter from 'wolfy87-eventemitter'
+
   class OneTimer{
     constructor(){
-      this.line = new singlie_1();
+      this.line = new singlie.Linear();
       this.onlyTimer = null;
     }
     InWhichIndex(node){
@@ -957,14 +960,14 @@
     push(delay, callback){
       let _delay = Number(delay) >= 0 ? Number(delay) : 0,
         id = Date.now() + _delay,
-        node = new Node(id),
+        node$1 = new node(id),
         isEmpty = this.line.isEmpty();
       
       // init callbacks
-      node.callbacks = callback instanceof Array ? callback : [callback];
+      node$1.callbacks = callback instanceof Array ? callback : [callback];
       // find out where to insert
-      let index = this.InWhichIndex(node);
-      this.line.insert({ value: node, index });
+      let index = this.InWhichIndex(node$1);
+      this.line.insert({ value: node$1, index });
       // recompucate the delta of insert node and prev node
       let insertNode = this.line.node(index),
         prevNode = this.line.node(index - 1 ),
@@ -991,12 +994,15 @@
         // start again
         this.startTimer(delta);
       }, delay);
+      this.emitEvent('timeout', [delay]);
     }
   }
 
   // inherit EventEmitter
   Object.assign(OneTimer.prototype, EventEmitter.prototype);
 
-  return OneTimer;
+  var OneTimer_1 =  OneTimer;
+
+  return OneTimer_1;
 
 }));

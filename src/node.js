@@ -1,4 +1,4 @@
-export default class {
+module.exports = class {
   constructor(id){
     this.id = id || Date.now()
     this.callbacks = [] 

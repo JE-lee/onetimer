@@ -21,13 +21,13 @@ export default {
   ],
   plugins: [
     resolve(),
-    commonjs({
+    commonjs(/*{
       namedExports: {
         // left-hand side can be an absolute path, a path
         // relative to the current directory, or the name
         // of a module in node_modules
         'node_modules/singlie/index.js': ['Linear']
       }
-    })
+    }*/) // 将npm 包打包在一起
   ]
 }
