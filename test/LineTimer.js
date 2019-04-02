@@ -1,11 +1,11 @@
-import LineTimer from '../dist/LineTimer'
+import OneTimer from '../src/OneTimer'
 import _ from 'lodash'
 
 const assert = require('assert')
 let list = []
 const generateFn = word => () => list.push(word)
 const test = (done, deltaList) => {
-  let line = new LineTimer()
+  let line = new OneTimer()
   list = []
   deltaList.forEach(delta => {
     line.push(delta, generateFn(delta))

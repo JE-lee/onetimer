@@ -3,11 +3,22 @@ import resolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 
 export default {
-  input: 'src/LineTimer.js',
-  output: {
-    file: 'dist/LineTimer.js',
-    format: 'es'
-  },
+  input: 'src/OneTimer.js',
+  output: [
+    {
+      file: 'dist/OneTimer.es.js',
+      format: 'es'
+    },
+    {
+      file: 'dist/OneTimer.umd.js',
+      format: 'umd',
+      name: 'OneTimer'
+    },
+    {
+      file: 'dist/OneTimer.cjs.js',
+      format: 'cjs'
+    }
+  ],
   plugins: [
     resolve(),
     commonjs({

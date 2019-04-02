@@ -4,7 +4,7 @@ import Node from './node'
 import { Linear } from 'singlie'
 import EventEmitter from 'wolfy87-eventemitter'
 
-class LineTimer{
+class OneTimer{
   constructor(){
     this.line = new Linear()
     this.onlyTimer = null
@@ -73,6 +73,6 @@ class LineTimer{
 }
 
 // inherit EventEmitter
-Object.assign(LineTimer.prototype, EventEmitter.prototype)
+Object.assign(OneTimer.prototype, EventEmitter.prototype)
 
-export default LineTimer
+export default OneTimer
