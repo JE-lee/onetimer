@@ -35,3 +35,14 @@ oneTimer.push(500, () => {})
 ...
 ```
 如上，不管你需要执行多少个定时逻辑，持有的定时器永远只有一个。
+
+V1.1.1 新增功能
+
+### oneTimer.setTimeout
+### oneTimer.clearTimeout
+* Return Type: Node
+```javascript
+let oneTimer = new OneTimer()
+let id = oneTimer.setTimeout( () => {}, delay)
+oneTimer.clearTimeout(id)
+```

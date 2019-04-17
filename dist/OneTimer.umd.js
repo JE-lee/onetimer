@@ -21,16 +21,83 @@
   class List {
     constructor() {
       this._head = null;
+      this._last = null;
       this._length = 0;
+    }
+
+    get head() {
+      return this._head;
+    }
+
+    get last() {
+      return this._last;
+    }
+
+    get length() {
+      return this._length;
+    }
+
+    _arrayify(value) {
+      return Array.isArray(value) ? value : [value];
+    }
+
+    _isValid(index) {
+      return index >= 0 && index < this.length;
+    }
+
+    clear() {
+      this._head = null;
+      this._last = null;
+      this._length = 0;
+      return this;
+    }
+
+    get(index) {
+      const {value} = this.node(index);
+      return value;
+    }
+
+    isCircular() {
+      return this.constructor.name === 'Circular';
+    }
+
+    isEmpty() {
+      return !this._head && this._length === 0;
+    }
+
+    isLinear() {
+      return this.constructor.name === 'Linear';
+    }
+
+    node(index) {
+      if (!this._isValid(index)) {
+        throw new RangeError('List index out of bounds');
+      }
+
+      let count = 0;
+      let {_head: node} = this;
+
+      while (index !== count) {
+        node = node.next;
+        count++;
+      }
+
+      return node;
+    }
+
+    set({value, index}) {
+      const node = this.node(index);
+      node.value = value;
+      return this;
     }
   }
 
   var list = List;
 
   class Node {
-    constructor(options = {}) {
-      this._value = options.value;
+    constructor(value) {
       this._next = null;
+      this._value = value;
     }
 
     get next() {
@@ -52,163 +119,208 @@
 
   var node$1 = Node;
 
-  class Circular extends list {
-    get _last() {
-      return this._traverse(this._head, this.length - 1);
-    }
-
-    get head() {
-      return this.isEmpty() ? undefined : this._head.value;
-    }
-
-    get last() {
-      return this.isEmpty() ? undefined : this._last.value;
-    }
-
-    get length() {
-      return this._length;
-    }
-
-    _arrayify(value) {
-      return Array.isArray(value) ? value : [value];
-    }
-
-    _isValid(index) {
-      return index >= 0 && index < this.length;
-    }
-
-    _traverse(node, index) {
-      return (node.next !== this._head && index > 0) ? this._traverse(node.next, index - 1) : node;
-    }
-
-    _getNode(index) {
-      return this._traverse(this._head, index);
-    }
-
+  class Linear extends list {
     _addHead(value) {
       const {_head} = this;
-      const node = new node$1({value});
+      const node = new node$1(value);
+      node.next = _head;
       this._head = node;
-      this._head.next = this.length === 0 ? node : _head;
       this._length++;
-      this._last.next = this._head;
-      return this;
     }
 
-    _addNode(value, index = this.length) {
-      const node = new node$1({value});
-      const prev = this._getNode(index - 1);
-      node.next = prev.next;
+    _addLast(value) {
+      const node = new node$1(value);
+      this._last.next = node;
+      this._last = node;
       this._length++;
+    }
+
+    _addNode(value, index) {
+      const node = new node$1(value);
+      const prev = this.node(index - 1);
+      node.next = prev.next;
       prev.next = node;
-      return this;
+      this._length++;
+    }
+
+    _initializeList(value) {
+      const node = new node$1(value);
+      this._head = node;
+      this._last = node;
+      this._length++;
     }
 
     _removeHead() {
-      const {_head} = this;
-      this._last.next = _head.next;
-      this._head = this._last.next;
-      _head.next = null;
+      const {next} = this._head;
+
+      if (!next) {
+        return this.clear();
+      }
+
+      this._head = next;
+      this._length--;
+      return this;
+    }
+
+    _removeLast() {
+      const prev = this.node(this.length - 2);
+      prev.next = null;
+      this._last = prev;
       this._length--;
       return this;
     }
 
     _removeNode(index) {
-      const node = this._getNode(index);
-      this._getNode(index - 1).next = node.next;
-      node.next = null;
+      const prev = this.node(index - 1);
+      const {next: node} = prev;
+      prev.next = node.next;
       this._length--;
-      return this;
-    }
-
-    _swap(x, index, swaps) {
-      const y = this._getNode(index - 1);
-      [x.value, y.value] = [y.value, x.value];
-      return swaps > 0 ? this._swap(x.next, index - 1, swaps - 1) : this;
-    }
-
-    _map(fn, node = this._head) {
-      node.value = fn(node.value);
-      return node.next === this._head ? this : this._map(fn, node.next);
-    }
-
-    _forEach(fn, node = this._head) {
-      if (node.next !== this._head) {
-        fn(node.value);
-        return this._forEach(fn, node.next);
-      }
-
-      return fn(node.value);
-    }
-
-    isEmpty() {
-      return !this._head && !this._length;
-    }
-
-    prepend(...values) {
-      values.forEach(value => this._addHead(value));
-      return this;
-    }
-
-    insert({value, index = this.length}) {
-      this._arrayify(value).forEach(value => {
-        return (index <= 0) ? this._addHead(value) : this._addNode(value, index);
-      });
       return this;
     }
 
     append(...values) {
       values.forEach(value => {
-        return this.isEmpty() ? this._addHead(value) : this._addNode(value);
+        if (this.isEmpty()) {
+          return this._initializeList(value);
+        }
+
+        return this._addLast(value);
       });
       return this;
     }
 
-    node(index) {
-      if (!this._isValid(index)) {
-        return undefined;
-      }
+    filter(fn) {
+      const list = new Linear();
 
-      return this._getNode(index);
+      this.forEach(x => {
+        if (fn(x)) {
+          list.append(x);
+        }
+      });
+
+      return list;
     }
 
-    set({value, index}) {
-      if (!this._isValid(index)) {
-        throw new Error('List index out of bounds');
+    forEach(fn) {
+      let {_head: node} = this;
+
+      while (node) {
+        fn(node.value);
+        node = node.next;
       }
 
-      const target = this._getNode(index);
-      target.value = value;
       return this;
     }
 
-    get(index) {
-      if (!this._isValid(index)) {
-        return undefined;
+    includes(value) {
+      let {_head: node} = this;
+
+      while (node) {
+        if (node.value === value) {
+          return true;
+        }
+
+        node = node.next;
       }
 
-      const {value} = this._getNode(index);
-      return value;
+      return false;
     }
 
-    remove(index = this.length - 1) {
+    indexOf(value) {
+      let counter = 0;
+      let {_head: node} = this;
+
+      while (node) {
+        if (node.value === value) {
+          return counter;
+        }
+
+        counter++;
+        node = node.next;
+      }
+
+      return -1;
+    }
+
+    insert({value, index}) {
+      this._arrayify(value).forEach(x => {
+        if (index === 0) {
+          return this.prepend(x);
+        }
+
+        if (index === this.length) {
+          return this.append(x);
+        }
+
+        return this._addNode(x, index);
+      });
+      return this;
+    }
+
+    join(separator = ',') {
+      let result = '';
+      let {_head: node} = this;
+
+      while (node) {
+        result += node.value;
+
+        if (node.next) {
+          result += separator;
+        }
+
+        node = node.next;
+      }
+
+      return result;
+    }
+
+    map(fn) {
+      const list = new Linear();
+      this.forEach(x => list.append(fn(x)));
+      return list;
+    }
+
+    prepend(...values) {
+      values.forEach(value => {
+        if (this.isEmpty()) {
+          return this._initializeList(value);
+        }
+
+        return this._addHead(value);
+      });
+      return this;
+    }
+
+    reduce(fn, acc) {
+      let result = acc;
+
+      this.forEach(x => {
+        result = fn(result, x);
+      });
+
+      return result;
+    }
+
+    remove(index) {
       if (!this._isValid(index)) {
-        return undefined;
+        throw new RangeError('List index out of bounds');
       }
 
       if (index === 0) {
-        return (this.length === 1) ? this.clear() : this._removeHead();
+        return this._removeHead();
+      }
+
+      if (index === this.length - 1) {
+        return this._removeLast();
       }
 
       return this._removeNode(index);
     }
 
-    forEach(fn) {
-      if (this.length === 0) {
-        return;
-      }
-
-      return this._forEach(fn);
+    reverse() {
+      const list = new Linear();
+      this.forEach(x => list.prepend(x));
+      return list;
     }
 
     toArray() {
@@ -217,189 +329,235 @@
       return array;
     }
 
-    map(fn) {
+    toCircular() {
+      const Circular = circular;
       const list = new Circular();
-
-      if (this.length === 0) {
-        return list;
-      }
-
-      list.append(...this.toArray());
-      return list._map(fn);
+      this.forEach(x => list.append(x));
+      return list;
     }
 
-    join(string) {
-      return this.toArray().join(string);
-    }
-
-    reverse() {
-      if (this.isEmpty()) {
-        return this;
-      }
-
-      const swaps = Math.floor(this.length / 2) - 1;
-      return this._swap(this._head, this.length, swaps);
-    }
-
-    clear() {
-      this._head = null;
-      this._length = 0;
-      return this;
+    toString() {
+      return this.join(',');
     }
   }
 
-  var circular = Circular;
+  var linear = Linear;
 
-  class Linear extends list {
-    get _last() {
-      return this._traverse(this._head, this.length - 1);
-    }
-
-    get head() {
-      return this.isEmpty() ? undefined : this._head.value;
-    }
-
-    get last() {
-      return this.isEmpty() ? undefined : this._last.value;
-    }
-
-    get length() {
-      return this._length;
-    }
-
-    _arrayify(value) {
-      return Array.isArray(value) ? value : [value];
-    }
-
-    _isValid(index) {
-      return index >= 0 && index < this.length;
-    }
-
-    _traverse(node, index) {
-      return (node.next && index > 0) ? this._traverse(node.next, index - 1) : node;
-    }
-
-    _getNode(index) {
-      return this._traverse(this._head, index);
-    }
-
+  class Circular extends list {
     _addHead(value) {
       const {_head} = this;
-      this._head = new node$1({value});
-      this._head.next = _head;
+      const node = new node$1(value);
+      node.next = _head;
+      this._last.next = node;
+      this._head = node;
       this._length++;
-      return this;
     }
 
-    _addNode(value, index = this.length) {
-      const node = new node$1({value});
-      const prev = this._getNode(index - 1);
+    _addLast(value) {
+      const {_head} = this;
+      const node = new node$1(value);
+      node.next = _head;
+      this._last.next = node;
+      this._last = node;
+      this._length++;
+    }
+
+    _addNode(value, index) {
+      const node = new node$1(value);
+      const prev = this.node(index - 1);
       node.next = prev.next;
       prev.next = node;
       this._length++;
-      return this;
+    }
+
+    _initializeList(value) {
+      const node = new node$1(value);
+      node.next = node;
+      this._head = node;
+      this._last = node;
+      this._length++;
     }
 
     _removeHead() {
-      const {_head} = this;
-      this._head = _head.next;
-      _head.next = null;
+      const {next: node} = this._head;
+
+      if (node === this._head) {
+        return this.clear();
+      }
+
+      this._last.next = node;
+      this._head = node;
+      this._length--;
+      return this;
+    }
+
+    _removeLast() {
+      const prev = this.node(this.length - 2);
+      prev.next = this._head;
+      this._last = prev;
       this._length--;
       return this;
     }
 
     _removeNode(index) {
-      const node = this._getNode(index);
-      this._getNode(index - 1).next = node.next;
-      node.next = null;
+      const prev = this.node(index - 1);
+      const {next: node} = prev;
+      prev.next = node.next;
       this._length--;
-      return this;
-    }
-
-    _swap(x, index, swaps) {
-      const y = this._getNode(index - 1);
-      [x.value, y.value] = [y.value, x.value];
-      return swaps > 0 ? this._swap(x.next, index - 1, swaps - 1) : this;
-    }
-
-    _map(fn, node = this._head) {
-      node.value = fn(node.value);
-      return node.next ? this._map(fn, node.next) : this;
-    }
-
-    _forEach(fn, node = this._head) {
-      if (node.next) {
-        fn(node.value);
-        return this._forEach(fn, node.next);
-      }
-
-      return fn(node.value);
-    }
-
-    isEmpty() {
-      return !this._head && !this._length;
-    }
-
-    prepend(...values) {
-      values.forEach(value => this._addHead(value));
-      return this;
-    }
-
-    insert({value, index = this.length}) {
-      this._arrayify(value).forEach(value => {
-        return (index <= 0) ? this._addHead(value) : this._addNode(value, index);
-      });
       return this;
     }
 
     append(...values) {
       values.forEach(value => {
-        return this.isEmpty() ? this._addHead(value) : this._addNode(value);
+        if (this.isEmpty()) {
+          return this._initializeList(value);
+        }
+
+        return this._addLast(value);
       });
       return this;
     }
 
-    node(index) {
-      if (!this._isValid(index)) {
-        return undefined;
-      }
+    filter(fn) {
+      const list = new Circular();
 
-      return this._getNode(index);
-    }
+      this.forEach(x => {
+        if (fn(x)) {
+          list.append(x);
+        }
+      });
 
-    set({value, index}) {
-      if (!this._isValid(index)) {
-        throw new Error('List index out of bounds');
-      }
-
-      const target = this._getNode(index);
-      target.value = value;
-      return this;
-    }
-
-    get(index) {
-      if (!this._isValid(index)) {
-        return undefined;
-      }
-
-      const {value} = this._getNode(index);
-      return value;
-    }
-
-    remove(index = this.length - 1) {
-      if (!this._isValid(index)) {
-        return undefined;
-      }
-
-      return (index === 0) ? this._removeHead() : this._removeNode(index);
+      return list;
     }
 
     forEach(fn) {
-      if (this.length === 0) {
-        return;
+      let {_head: node} = this;
+
+      if (node) {
+        do {
+          fn(node.value);
+          node = node.next;
+        } while (node !== this._head);
       }
 
-      this._forEach(fn);
+      return this;
+    }
+
+    includes(value) {
+      let {_head: node} = this;
+
+      if (node) {
+        do {
+          if (node.value === value) {
+            return true;
+          }
+
+          node = node.next;
+        } while (node !== this._head);
+      }
+
+      return false;
+    }
+
+    indexOf(value) {
+      let counter = 0;
+      let {_head: node} = this;
+
+      if (node) {
+        do {
+          if (node.value === value) {
+            return counter;
+          }
+
+          counter++;
+          node = node.next;
+        } while (node !== this._head);
+      }
+
+      return -1;
+    }
+
+    insert({value, index}) {
+      this._arrayify(value).forEach(x => {
+        if (index === 0) {
+          return this.prepend(x);
+        }
+
+        if (index === this.length) {
+          return this.append(x);
+        }
+
+        return this._addNode(x, index);
+      });
+      return this;
+    }
+
+    join(separator = ',') {
+      let result = '';
+      let {_head: node} = this;
+
+      if (node) {
+        do {
+          result += node.value;
+
+          if (node.next !== this._head) {
+            result += separator;
+          }
+
+          node = node.next;
+        } while (node !== this._head);
+      }
+
+      return result;
+    }
+
+    map(fn) {
+      const list = new Circular();
+      this.forEach(x => list.append(fn(x)));
+      return list;
+    }
+
+    prepend(...values) {
+      values.forEach(value => {
+        if (this.isEmpty()) {
+          return this._initializeList(value);
+        }
+
+        return this._addHead(value);
+      });
+      return this;
+    }
+
+    reduce(fn, acc) {
+      let result = acc;
+
+      this.forEach(x => {
+        result = fn(result, x);
+      });
+
+      return result;
+    }
+
+    remove(index) {
+      if (!this._isValid(index)) {
+        throw new RangeError('List index out of bounds');
+      }
+
+      if (index === 0) {
+        return this._removeHead();
+      }
+
+      if (index === this.length - 1) {
+        return this._removeLast();
+      }
+
+      return this._removeNode(index);
+    }
+
+    reverse() {
+      const list = new Circular();
+      this.forEach(x => list.prepend(x));
+      return list;
     }
 
     toArray() {
@@ -408,38 +566,19 @@
       return array;
     }
 
-    map(fn) {
+    toLinear() {
+      const Linear = linear;
       const list = new Linear();
-
-      if (this.isEmpty()) {
-        return list;
-      }
-
-      list.append(...this.toArray());
-      return list._map(fn);
+      this.forEach(x => list.append(x));
+      return list;
     }
 
-    join(string) {
-      return this.toArray().join(string);
-    }
-
-    reverse() {
-      if (this.isEmpty()) {
-        return this;
-      }
-
-      const swaps = Math.floor(this.length / 2) - 1;
-      return this._swap(this._head, this.length, swaps);
-    }
-
-    clear() {
-      this._head = null;
-      this._length = 0;
-      return this;
+    toString() {
+      return this.join(',');
     }
   }
 
-  var linear = Linear;
+  var circular = Circular;
 
   var singlie = Object.assign({}, {Circular: circular}, {Linear: linear}, {Node: node$1});
 
@@ -934,7 +1073,7 @@
       this.line = new singlie.Linear();
       this.onlyTimer = null;
     }
-    InWhichIndex(node){
+    shouldInWhichIndex(node){
       // half-interval search
       let id = node.id,
         high = this.line.length - 1,
@@ -950,6 +1089,7 @@
         }else if(middleId < id){
           ret = low = middle; 
         }else {
+          ret = middle; 
           break
         }
 
@@ -966,24 +1106,49 @@
       // init callbacks
       node$1.callbacks = callback instanceof Array ? callback : [callback];
       // find out where to insert
-      let index = this.InWhichIndex(node$1);
+      let index = this.shouldInWhichIndex(node$1);
       this.line.insert({ value: node$1, index });
       // recompucate the delta of insert node and prev node
       let insertNode = this.line.node(index),
-        prevNode = this.line.node(index - 1 ),
+        prevNode = index > 0 && this.line.node(index - 1),
         nextNode = insertNode.next;
 
       prevNode && (prevNode.value.delta = insertNode.value.id - prevNode.value.id);
       nextNode && (insertNode.value.delta = nextNode.value.id - insertNode.value.id);
       // start the timer when the linked list is empty before insertting node 
       isEmpty && this.startTimer(delay);
+      return node$1
+    }
+    setTimeout(callback, delay){
+      return this.push(delay, callback)
+    }
+    remove(node$1){
+      if(!(node$1 instanceof node)) return 
+      let index = this.line.indexOf(node$1);
+      if(index >= 0){
+        let prevNode = index > 0 && this.line.node(index - 1),
+          nextNode = index < this.line.length - 1 && this.line.node(index + 1);
+        this.line.remove(index);
+
+        // recompucate the delta prev node
+        prevNode && nextNode && (prevNode.value.delta = nextNode.value.id - prevNode.value.id);
+
+        // if need to startTimer
+        if(index == 0){
+          clearTimeout(this.onlyTimer);
+          this.startTimer(Date.now() - node$1.id + node$1.delta);
+        }
+      }
+    }
+    clearTimeout(node){
+      return this.remove(node)
     }
     startTimer(delay){
       let line = this.line;
       this.onlyTimer = setTimeout(() => {
-        let delta = line.head.delta; 
+        let delta = line.head.value.delta; 
         // execute callback
-        line.head.callback();
+        line.head.value.callback();
         // remove the linked list head
         line.remove(0);
         // stop the line-timer 
