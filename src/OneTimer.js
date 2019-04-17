@@ -10,7 +10,7 @@ class OneTimer{
     this.line = new singlie.Linear()
     this.onlyTimer = null
   }
-  InWhichIndex(node){
+  shouldInWhichIndex(node){
     // half-interval search
     let id = node.id,
       high = this.line.length - 1,
@@ -26,6 +26,7 @@ class OneTimer{
       }else if(middleId < id){
         ret = low = middle 
       }else {
+        ret = middle 
         break
       }
 
@@ -42,7 +43,7 @@ class OneTimer{
     // init callbacks
     node.callbacks = callback instanceof Array ? callback : [callback]
     // find out where to insert
-    let index = this.InWhichIndex(node)
+    let index = this.shouldInWhichIndex(node)
     this.line.insert({ value: node, index })
     // recompucate the delta of insert node and prev node
     let insertNode = this.line.node(index),
@@ -53,6 +54,31 @@ class OneTimer{
     nextNode && (insertNode.value.delta = nextNode.value.id - insertNode.value.id)
     // start the timer when the linked list is empty before insertting node 
     isEmpty && this.startTimer(delay)
+    return node
+  }
+  setTimeout(callback, delay){
+    return this.push(delay, callback)
+  }
+  remove(node){
+    if(!(node instanceof Node)) return 
+    let index = this.line.indexOf(node)
+    if(index >= 0){
+      let prevNode = this.line.node(index - 1),
+        nextNode = this.line.node(index + 1)
+      this.line.remove(index)
+
+      // recompucate the delta prev node
+      prevNode && (prevNode.value.delta = nextNode.value.id - prevNode.value.id)
+
+      // if need to startTimer
+      if(index == 0){
+        clearTimeout(this.onlyTimer)
+        this.startTimer(Date.now() - node.id + node.delta)
+      }
+    }
+  }
+  clearTimeout(node){
+    return this.remove(node)
   }
   startTimer(delay){
     let line = this.line

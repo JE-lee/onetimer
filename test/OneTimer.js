@@ -95,4 +95,12 @@ describe('line', function(){
     
     
   })
+  it('#test6', function(done){
+    let list = [0,1,2,3,3,3,3,4,5,6]
+    test(done, list)
+  })
+  it('#test7', function (done) {
+    let list = [0, 10, 20, 30, 30, 30, 30, 40, 50, 60]
+    test(done, list)
+  })
 })
