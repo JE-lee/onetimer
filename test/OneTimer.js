@@ -6,7 +6,7 @@ const _ = require('lodash')
 const assert = require('assert')
 let list = []
 const generateFn = word => () => list.push(word)
-const test = (done, deltaList) => {
+const testOutputOrder = (done, deltaList) => {
   let line = new OneTimer()
   list = []
   deltaList.forEach(delta => {
@@ -20,6 +20,33 @@ const test = (done, deltaList) => {
     done()
   })
 }
+
+const testDelta = (deltaList, done) => {
+  let timer = new OneTimer(),
+    deltas = [],
+    fn = delay => timer.push(delay, () => { })
+
+  let list = deltaList,
+    expectedDeltaList = list.sort((a, b) => a - b).reduce((detals, item, curIndex) => {
+      if (curIndex == 0) {
+        detals.push(item)
+        return detals
+      }
+      detals.push(item - list[curIndex - 1])
+      return detals
+    }, [])
+  timer.on('timeout', delta => deltas.push(delta))
+  timer.on('done', () => {
+    // eslint-disable-next-line no-console
+    console.log('deltas', deltas)
+    // eslint-disable-next-line no-console
+    console.log('expectedDeltaList', expectedDeltaList)
+    assert.ok(compare(deltas, expectedDeltaList, 2), 'not equal')
+    done()
+  })
+  list.forEach(delta => fn(delta))
+}
+
 
 // compare two array in the precision of ±1ms
 function compare(checkList, expectedList, precision = 1){
@@ -35,17 +62,17 @@ describe('line', function(){
   //this.timeout(0)
   it('#test1', (done) => {
     let list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    test(done,list)
+    testOutputOrder(done,list)
   })
   it('#test2', (done) => {
     // Whether it works
     let list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].reverse().map((delta, i) => delta + i * 10)
-    test(done, list)
+    testOutputOrder(done, list)
   })
   it('#test3', (done) => {
     // Whether it works
     let list = Array(10).fill(1).map(() => _.random(500))
-    test(done, list)
+    testOutputOrder(done, list)
   })
   it('#test4', function(done){
     let timer = new OneTimer(),
@@ -69,38 +96,18 @@ describe('line', function(){
     fn(100)
   })
   it('#test5', function(done) {
-    let timer = new OneTimer(),
-      deltas = [],
-      fn = delay => timer.push(delay, () => {})
-    
-    let list = Array(10).fill('').map(() => _.random(500)),
-      expectedDeltaList = list.sort((a, b) => a - b).reduce((detals, item, curIndex) => {
-        if(curIndex == 0){
-          detals.push(item)
-          return detals
-        }
-        detals.push(item - list[curIndex - 1])
-        return detals 
-      },[])
-    timer.on('timeout', delta => deltas.push(delta))
-    timer.on('done', () => {
-      // eslint-disable-next-line no-console
-      console.log('deltas', deltas)
-      // eslint-disable-next-line no-console
-      console.log('expectedDeltaList', expectedDeltaList)
-      assert.ok(compare(deltas, expectedDeltaList,2), 'not equal')
-      done()
-    })
-    list.forEach(delta => fn(delta))
-    
-    
+    testDelta(Array(10).fill('').map(() => _.random(500)), done)
   })
   it('#test6', function(done){
     let list = [0,1,2,3,3,3,3,4,5,6]
-    test(done, list)
+    testOutputOrder(done, list)
   })
   it('#test7', function (done) {
     let list = [0, 10, 20, 30, 30, 30, 30, 40, 50, 60]
-    test(done, list)
+    testOutputOrder(done, list)
+  })
+  it('#test8', function(done){
+    let list = [0,10,20,30,30,30,40,50,60,50,70]
+    testDelta(list, done)
   })
 })
