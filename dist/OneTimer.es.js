@@ -1131,6 +1131,7 @@ class OneTimer{
       if(index == 0){
         clearTimeout(this.onlyTimer);
         !this.line.isEmpty() && this.startTimer(Date.now() - node$1.id + node$1.delta);
+        this.$$removedHead = this.$$callbacking;
       }
     }
   }
@@ -1142,16 +1143,20 @@ class OneTimer{
     this.onlyTimer = setTimeout(() => {
       let delta = line.head.value.delta; 
       // execute callback
+      this.$$callbacking = true; 
       line.head.value.callback();
+      this.$$callbacking = false;
       // remove the linked list head
-      line.remove(0);
+      // if not remove the line.head in the callback
+      !this.$$removedHead && line.remove(0);
       // stop the line-timer 
       if (line.isEmpty()) {
         this.emitEvent('done');
         return 
       } 
       // start again
-      this.startTimer(delta);
+      // if not remove the line.head in the callback
+      !this.$$removedHead && this.startTimer(delta);
     }, delay);
     this.emitEvent('timeout', [delay]);
   }

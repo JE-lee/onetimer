@@ -56,4 +56,41 @@ describe('OneTimer.clearTimeout', function(){
       done()
     }, 800)
   })
+
+  it('clearTimeout5', function (done) {
+    let timer = new OneTimer()
+    let id = timer.setTimeout(() => {
+      timer.clearTimeout(id)
+      done()
+    }, 500)
+  })
+
+  it('clearTimeout6', function (done) {
+    let timer = new OneTimer()
+    let id = timer.setTimeout(() => {
+      timer.clearTimeout(id)
+    }, 100)
+
+    timer.setTimeout(() => {
+      console.log('done')
+      done()
+    }, 200)
+  })
+
+  it('clearTimeout7', function (done) {
+    let timer = new OneTimer()
+    timer.setTimeout(() => {
+      console.log('done 1')
+    }, 100)
+
+    let id = timer.setTimeout(() => {
+      console.log('done 2')
+      timer.clearTimeout(id)
+    }, 200)
+
+    timer.setTimeout(() => {
+      console.log('done 3')
+      done()
+    }, 300)
+  })
 })
