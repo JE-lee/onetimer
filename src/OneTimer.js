@@ -47,7 +47,7 @@ class OneTimer{
     this.line.insert({ value: node, index })
     // recompucate the delta of insert node and prev node
     let insertNode = this.line.node(index),
-      prevNode = this.line.node(index - 1 ),
+      prevNode = index > 0 && this.line.node(index - 1),
       nextNode = insertNode.next
 
     prevNode && (prevNode.value.delta = insertNode.value.id - prevNode.value.id)
@@ -63,12 +63,12 @@ class OneTimer{
     if(!(node instanceof Node)) return 
     let index = this.line.indexOf(node)
     if(index >= 0){
-      let prevNode = this.line.node(index - 1),
-        nextNode = this.line.node(index + 1)
+      let prevNode = index > 0 && this.line.node(index - 1),
+        nextNode = index < this.line.length - 1 && this.line.node(index + 1)
       this.line.remove(index)
 
       // recompucate the delta prev node
-      prevNode && (prevNode.value.delta = nextNode.value.id - prevNode.value.id)
+      prevNode && nextNode && (prevNode.value.delta = nextNode.value.id - prevNode.value.id)
 
       // if need to startTimer
       if(index == 0){
@@ -83,9 +83,9 @@ class OneTimer{
   startTimer(delay){
     let line = this.line
     this.onlyTimer = setTimeout(() => {
-      let delta = line.head.delta 
+      let delta = line.head.value.delta 
       // execute callback
-      line.head.callback()
+      line.head.value.callback()
       // remove the linked list head
       line.remove(0)
       // stop the line-timer 

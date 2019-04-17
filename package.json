@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "singlie": "^1.1.0",
+    "singlie": "^2.1.0",
     "wolfy87-eventemitter": "^5.2.6"
   },
   "devDependencies": {
