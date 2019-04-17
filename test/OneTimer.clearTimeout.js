@@ -48,4 +48,12 @@ describe('OneTimer.clearTimeout', function(){
       done()
     })
   })
+  it('clearTimeout4', function(done){
+    let timer = new OneTimer()
+    let id = timer.setTimeout(() => done('error'), 500)
+    timer.clearTimeout(id)
+    setTimeout(() => {
+      done()
+    }, 800)
+  })
 })

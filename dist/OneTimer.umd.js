@@ -1136,7 +1136,7 @@
         // if need to startTimer
         if(index == 0){
           clearTimeout(this.onlyTimer);
-          this.startTimer(Date.now() - node$1.id + node$1.delta);
+          !this.line.isEmpty() && this.startTimer(Date.now() - node$1.id + node$1.delta);
         }
       }
     }
