@@ -110,4 +110,16 @@ describe('line', function(){
     let list = [0,10,20,30,30,30,40,50,60,50,70]
     testDelta(list, done)
   })
+
+  // test start timer
+  it('#test9', function(done){
+    this.timeout(1000)
+    let list = [50, 2, 20, 500, 100]
+    let timer = new OneTimer()
+    timer.setTimeout(() => done('timeout'), 100* 1000)
+    list.forEach(delta => timer.setTimeout(() => {
+      assert.ok(delta, 2, 'not equal 2')
+      done()
+    }))
+  })
 })

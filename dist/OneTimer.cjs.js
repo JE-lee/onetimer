@@ -1113,6 +1113,11 @@ class OneTimer{
     nextNode && (insertNode.value.delta = nextNode.value.id - insertNode.value.id);
     // start the timer when the linked list is empty before insertting node 
     isEmpty && this.startTimer(delay);
+    // start timer 
+    if (!isEmpty && index == 0){
+      clearTimeout(this.onlyTimer);
+      this.startTimer(insertNode.value.id - Date.now());
+    }
     return node$1
   }
   setTimeout(callback, delay){
