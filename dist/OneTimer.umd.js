@@ -1176,10 +1176,12 @@
     }
     pause(){
       clearTimeout(this.onlyTimer);
+      this.status = 'pausing';
     }
     restart(){
-      if(!this.line.isEmpty()){
+      if(!this.line.isEmpty() && this.status == 'pausing'){
         this.startTimer(this.line.head.value.id - Date.now());
+        this.status = 'processing';
       }
     }
 
