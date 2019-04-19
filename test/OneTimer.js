@@ -46,7 +46,6 @@ const testDelta = (deltaList, done) => {
   list.forEach(delta => fn(delta))
 }
 
-
 function sleep(ms) {
   let start = Date.now()
   // eslint-disable-next-line no-empty
