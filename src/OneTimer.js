@@ -78,7 +78,7 @@ class OneTimer{
       // if need to startTimer
       if(index == 0){
         clearTimeout(this.onlyTimer)
-        !this.line.isEmpty() && this.startTimer(Date.now() - node.id + node.delta)
+        !this.line.isEmpty() && this.startTimer(node.id - Date.now() + node.delta)
         this.$$removedHead = this.$$callbacking
       }
     }
@@ -107,6 +107,9 @@ class OneTimer{
       !this.$$removedHead && this.startTimer(delta)
     }, delay)
     this.emitEvent('timeout', [delay])
+  }
+  get linkedline(){
+    return this.line.toArray()
   }
 }
 
