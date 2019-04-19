@@ -152,8 +152,9 @@ describe('line', function(){
     console.log('delay1List', delay1List)
     assert.ok(compare(delay1List, [delay1 - 20 - delay2], 4), 'delta not correct 1')
 
-
+    timer.pause()
     sleep(50) 
+    timer.restart()
     const delay3 = 1000
     let call3 =  () => done('it should not restart timer')
     timer.on('timeout', call3)

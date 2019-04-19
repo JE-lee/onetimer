@@ -1174,6 +1174,15 @@
     get linkedline(){
       return this.line.toArray()
     }
+    pause(){
+      clearTimeout(this.onlyTimer);
+    }
+    restart(){
+      if(!this.line.isEmpty()){
+        this.startTimer(this.line.head.value.id - Date.now());
+      }
+    }
+
   }
 
   // inherit EventEmitter
