@@ -150,7 +150,7 @@ describe('line', function(){
     let delay1List = timer.linkedline.map(n => n.delta).slice(0,-1)
     // eslint-disable-next-line no-console
     console.log('delay1List', delay1List)
-    assert.ok(compare(delay1List, [delay1 - 20 - delay2], 2), 'delta not correct 1')
+    assert.ok(compare(delay1List, [delay1 - 20 - delay2], 4), 'delta not correct 1')
 
 
     sleep(50) 
